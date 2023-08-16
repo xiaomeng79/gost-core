@@ -11,6 +11,7 @@ import (
 	"github.com/go-gost/core/logger"
 	"github.com/go-gost/core/recorder"
 	"github.com/go-gost/core/resolver"
+	"github.com/go-gost/core/utils"
 )
 
 type SockOpts struct {
@@ -152,7 +153,12 @@ func (r *Router) dial(ctx context.Context, network, address string) (conn net.Co
 	if count <= 0 {
 		count = 1
 	}
-	r.options.Logger.Debugf("dial %s/%s", address, network)
+	ctx, requestid := utils.GetOrSetRequestID(ctx)
+	log := r.options.Logger.WithFields(map[string]any{
+		"requestid": requestid,
+	})
+
+	log.Debugf("dial %s/%s", address, network)
 
 	for i := 0; i < count; i++ {
 		var route Route
@@ -166,12 +172,12 @@ func (r *Router) dial(ctx context.Context, network, address string) (conn net.Co
 				fmt.Fprintf(&buf, "%s@%s > ", node.Name, node.Addr)
 			}
 			fmt.Fprintf(&buf, "%s", address)
-			r.options.Logger.Debugf("route(retry=%d) %s", i, buf.String())
+			log.Debugf("route(retry=%d) %s", i, buf.String())
 		}
 
 		address, err = Resolve(ctx, "ip", address, r.options.Resolver, r.options.HostMapper, r.options.Logger)
 		if err != nil {
-			r.options.Logger.Error(err)
+			log.Error(err)
 			break
 		}
 
@@ -187,7 +193,7 @@ func (r *Router) dial(ctx context.Context, network, address string) (conn net.Co
 		if err == nil {
 			break
 		}
-		r.options.Logger.Errorf("route(retry=%d) %s", i, err)
+		log.Errorf("route(retry=%d) %s", i, err)
 	}
 
 	return
