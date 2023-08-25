@@ -47,6 +47,8 @@ func GetInt(md metadata.Metadata, keys ...string) (v int) {
 			}
 		case int:
 			v = vv
+		case int64:
+			v = int(vv)
 		case string:
 			v, _ = strconv.Atoi(vv)
 		}

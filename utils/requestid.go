@@ -6,12 +6,12 @@ import (
 	"github.com/google/uuid"
 )
 
-type RequestID struct{}
+// type requestID struct{}
 
-// const REQUEST_ID = "requestid"
+const REQUEST_ID = "requestid"
 
 func GetRequestID(ctx context.Context) string {
-	if val := ctx.Value(RequestID{}); val != nil {
+	if val := ctx.Value(REQUEST_ID); val != nil {
 		if value, ok := val.(string); ok {
 			return value
 		}
@@ -20,7 +20,7 @@ func GetRequestID(ctx context.Context) string {
 }
 
 func SetRequestID(ctx context.Context, id string) context.Context {
-	return context.WithValue(ctx, RequestID{}, id)
+	return context.WithValue(ctx, REQUEST_ID, id)
 }
 
 func GetOrSetRequestID(ctx context.Context) (context.Context, string) {

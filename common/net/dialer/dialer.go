@@ -10,6 +10,7 @@ import (
 
 	xnet "github.com/go-gost/core/common/net"
 	"github.com/go-gost/core/logger"
+	"github.com/go-gost/core/utils"
 )
 
 const (
@@ -29,6 +30,14 @@ type NetDialer struct {
 }
 
 func (d *NetDialer) Dial(ctx context.Context, network, addr string) (conn net.Conn, err error) {
+	ctx, requestid := utils.GetOrSetRequestID(ctx)
+	log := d.Logger
+	if log == nil {
+		log = logger.Default()
+	}
+	log = log.WithFields(map[string]any{
+		"requestid": requestid,
+	})
 	if d == nil {
 		d = DefaultNetDialer
 	}
@@ -40,11 +49,6 @@ func (d *NetDialer) Dial(ctx context.Context, network, addr string) (conn net.Co
 
 	if d.DialFunc != nil {
 		return d.DialFunc(ctx, network, addr)
-	}
-
-	log := d.Logger
-	if log == nil {
-		log = logger.Default()
 	}
 
 	deadline := time.Now().Add(timeout)
